@@ -15,3 +15,4 @@ make dev
 ```
 ./main -o new.zip zip-file.jpg
 ```
+В valgrind.txt отчёт valgrind о состоянии хипа :)

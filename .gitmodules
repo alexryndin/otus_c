@@ -1,0 +1,3 @@
+[submodule "hw3/external/bstrlib"]
+	path = hw3/external/bstrlib
+	url = git@github.com:websnarf/bstrlib.git

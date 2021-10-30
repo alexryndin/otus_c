@@ -41,7 +41,7 @@ void FArray_clear(FArray *array) {
     CHECK(array->element_size == sizeof(void *),
           "Only ** arrays can be cleared.");
 
-    for (int i = 0; i < array->end; i++) {
+    for (size_t i = 0; i < array->end; i++) {
         free(((void **)(array->contents))[i]);
         ((void **)(array->contents))[i] = NULL;
     }
@@ -54,11 +54,11 @@ int FArray_expand(FArray *array) {
     CHECK(array != NULL, "Invalid array.");
     size_t new_size = FArray_max(array) * array->expand_factor + 1;
     CHECK(new_size > array->max && new_size > 0, "Bad new array size.");
-    void *contents =
-        realloc(array->contents, new_size * sizeof(array->element_size));
+    void *contents = realloc(array->contents, new_size * array->element_size);
     CHECK_MEM(contents);
 
-    memset(contents + array->max * array->element_size, 0,
+    // treat contents as plain memory block
+    memset((char *)contents + array->max * array->element_size, 0,
            (new_size - array->max) * array->element_size);
 
     array->max = new_size;
@@ -111,7 +111,6 @@ int FArray_push(FArray *array, void *el) {
     }
 
     dst = (void *)(array->contents + FArray_len(array) * array->element_size);
-    LOG_DEBUG("%d", *(int *)el);
 
     rc = memcpy(dst, el, array->element_size);
     CHECK(rc == dst, "memcpy failed.");
@@ -154,7 +153,7 @@ void FArray_clear_destroy(FArray *array) {
     CHECK(array->element_size == sizeof(void *),
           "Only ** arrays can be cleared.");
 
-    for (int i = 0; i < array->end; i++) {
+    for (size_t i = 0; i < array->end; i++) {
         free(((void **)(array->contents))[i]);
         ((void **)(array->contents))[i] = NULL;
     }

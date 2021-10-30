@@ -1,4 +1,4 @@
-#include "../src/farray.h"
+#include <farray.h>
 #include "minunit.h"
 #include <stdint.h>
 
@@ -164,7 +164,8 @@ char *test_set_complex_structs() {
     MU_ASSERT(array != NULL, "FArray_create failed.");
     MU_ASSERT(array->contents != NULL, "contents are wrong in array");
     MU_ASSERT(array->end == 0, "end isn't at the right spot");
-    MU_ASSERT(array->element_size == sizeof(ComplexStruct), "element size is wrong.");
+    MU_ASSERT(array->element_size == sizeof(ComplexStruct),
+              "element size is wrong.");
     LOG_DEBUG("sizeof complexstruct is %lu", sizeof(ComplexStruct));
     MU_ASSERT(array->storage_size == 0, "element size is wrong.");
     MU_ASSERT(array->max == 100, "wrong max length on initial size");
@@ -173,7 +174,6 @@ char *test_set_complex_structs() {
     for (i = 0; i < 100; i++) {
         ephemer.key = i;
         ephemer.data = (i * 333);
-        LOG_DEBUG("%lu", ephemer.data);
         FArray_set(array, i, &ephemer);
         MU_ASSERT(rc == 0, "Error pushing value.");
     }
@@ -188,7 +188,51 @@ char *test_set_complex_structs() {
         ret = FArray_get(array, i);
         MU_ASSERT(ret != NULL, "Should't get a NULL");
         MU_ASSERT(ret->key == i, "Wrong key value.");
-        LOG_DEBUG("data %lu, key %lu, hash %d, deleted %c", ret->data, ret->key, ret->hash, ret->deleted);
+        LOG_DEBUG("data %lu, key %lu, hash %d, deleted %c", ret->data, ret->key,
+                  ret->hash, ret->deleted);
+        MU_ASSERT(ret->data == i * 333, "Wrong data value.");
+    }
+
+    FArray_destroy(array);
+    return NULL;
+}
+
+char *test_push_pop_complex_structs() {
+    FArray *array = NULL;
+    int val = 0;
+    uint64_t i = 0;
+    int rc = 0;
+    // create
+    array = FArray_create(sizeof(ComplexStruct), 0, 100);
+    MU_ASSERT(array != NULL, "FArray_create failed.");
+    MU_ASSERT(array->contents != NULL, "contents are wrong in array");
+    MU_ASSERT(array->end == 0, "end isn't at the right spot");
+    MU_ASSERT(array->element_size == sizeof(ComplexStruct),
+              "element size is wrong.");
+    LOG_DEBUG("sizeof complexstruct is %lu", sizeof(ComplexStruct));
+    MU_ASSERT(array->storage_size == 0, "element size is wrong.");
+    MU_ASSERT(array->max == 100, "wrong max length on initial size");
+
+    ComplexStruct ephemer = {0};
+    for (i = 0; i < 1000; i++) {
+        ephemer.key = i;
+        ephemer.data = (i * 333);
+        rc = FArray_push(array, &ephemer);
+        MU_ASSERT(rc == 0, "Error pushing value.");
+    }
+
+    MU_ASSERT(array->max == 1154, "Wrong max size.");
+    MU_ASSERT(array->end == 1000, "Wrong len size.");
+
+    ComplexStruct *ret = NULL;
+
+    for (int i = 999; i >= 0; i--) {
+        LOG_DEBUG("i is %d", i);
+        ret = FArray_pop(array);
+        MU_ASSERT(ret != NULL, "Should't get a NULL");
+        MU_ASSERT(ret->key == i, "Wrong key value.");
+        LOG_DEBUG("data %lu, key %lu, hash %d, deleted %c", ret->data, ret->key,
+                  ret->hash, ret->deleted);
         MU_ASSERT(ret->data == i * 333, "Wrong data value.");
     }
 
@@ -202,6 +246,7 @@ char *all_tests() {
     MU_RUN_TEST(test_ints);
     MU_RUN_TEST(test_ints_set);
     MU_RUN_TEST(test_set_complex_structs);
+    MU_RUN_TEST(test_push_pop_complex_structs);
 
     return NULL;
 }

@@ -1,4 +1,5 @@
 #include "open_hashmap.h"
+#include <bstrlib/bstrlib.h>
 #include "dbg.h"
 #include "farray.h"
 #include "hashmap_utils.h"
@@ -46,7 +47,7 @@ OpenHashmap *OpenHashmap_create(OpenHashmap_compare compare,
 int OpenHashmap_destroy_with_kv(OpenHashmap *map) {
     int rc = 0;
     OpenHashmapNode *node = NULL;
-    for (int i = 0; i < map->number_of_buckets; i++) {
+    for (size_t i = 0; i < map->number_of_buckets; i++) {
         node = FArray_get(map->buckets, i);
         CHECK(node != NULL, "Couldn't find bucket.");
         if (node->key != NULL) {

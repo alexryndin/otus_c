@@ -1,9 +1,20 @@
 #include "hashmap_utils.h"
-#include "../external/bstrlib/bstrlib.h"
+#include <bstrlib/bstrlib.h>
+#include <dbg.h>
 #include <stdint.h>
 
 typedef int (*Hashmap_compare)(void *a, void *b);
 typedef uint32_t (*Hashmap_hash)(void *key);
+
+int str_cmp(bstring b1, bstring b2) { return bstrcmp(b1, b2); }
+
+int uint32_cmp(uint32_t *a, uint32_t *b) {
+    if (*a < *b)
+        return -1;
+    if (*a > *b)
+        return 1;
+    return 0;
+}
 
 GS *gs_create() {
     char *s = calloc(GS_DEFAULT_MAX, sizeof(char));
@@ -40,7 +51,7 @@ int gsconchar(GS *gs, char ch) {
         new_max = gs->max * GS_EXPAND_FACTOR;
         rc = realloc(gs->s, new_max);
         CHECK(rc != NULL, "good string reallocation failed.");
-        memset(rc + gs->len, 0, new_max - gs->len);
+        memset((char *)rc + gs->len, 0, new_max - gs->len);
         gs->s = rc;
         gs->max = new_max;
     }
@@ -54,22 +65,23 @@ error:
     return 1;
 }
 
-int str_cmp(bstring b1, bstring b2) { return bstrcmp(b1, b2); }
-
 int gstr_cmp(GS *b1, GS *b2) { return strcmp(b1->s, b2->s); }
 
-int uint32_cmp(uint32_t *a, uint32_t *b) {
-    if (*a < *b)
-        return -1;
-    if (*a > *b)
-        return 1;
-    return 0;
+uint32_t gstr_hash(GS *gs) {
+    uint32_t ret, i;
+
+    JENKINS_HASH(ret, gs->len, gs->s, ByteOf);
+    return ret;
 }
 
 uint32_t str_hash(const bstring key) {
+    if (blength(key) < 0) {
+        LOG_ERR("Cannot get hash of a string of negative length.");
+        return 0;
+    }
     uint32_t ret, i;
 
-    JENKINS_HASH(ret, blength(key), key, bchar);
+    JENKINS_HASH(ret, (uint32_t)blength(key), key, bchar);
     return ret;
 }
 
@@ -77,12 +89,5 @@ uint32_t uint32_hash(uint32_t *num) {
     uint32_t ret, i;
 
     JENKINS_HASH(ret, 4, num, ByteOf);
-    return ret;
-}
-
-uint32_t gstr_hash(GS *gs) {
-    uint32_t ret, i;
-
-    JENKINS_HASH(ret, gs->len, gs->s, ByteOf);
     return ret;
 }

@@ -1,6 +1,6 @@
-#include "../src/dbg.h"
-#include "../src/hashmap_utils.h"
-#include "../src/open_hashmap.h"
+#include <dbg.h>
+#include <hashmap_utils.h>
+#include <open_hashmap.h>
 #include <stdio.h>
 
 const char *const USAGE = "Usage: %s file [keys|values]\n";

@@ -52,6 +52,10 @@ GST_DEBUG_CATEGORY_STATIC(gst_otushw4_debug_category);
 #define O_BINARY (0)
 #endif
 
+#define SEC_SIZE 96000
+#define SAMPLE_SIZE 2
+#define HEADER_SIZE 44
+
 const unsigned char CHUNKID_SIG[] = {'R', 'I', 'F', 'F'};
 const unsigned char SUBCHUNK1ID_SIG[] = {'f', 'm', 't', ' '};
 const unsigned char SUBCHUNK2ID_SIG[] = {'d', 'a', 't', 'a'};
@@ -102,9 +106,9 @@ static void gst_otushw4_class_init(GstOtushw4Class *klass) {
     gst_element_class_add_static_pad_template(GST_ELEMENT_CLASS(klass),
                                               &gst_otushw4_src_template);
 
-    gst_element_class_set_static_metadata(
-        GST_ELEMENT_CLASS(klass), "OtusHW4", "Generic",
-        "OtusHW4", "Alex Ryndin <me@alexryndin.me>");
+    gst_element_class_set_static_metadata(GST_ELEMENT_CLASS(klass), "OtusHW4",
+                                          "Generic", "OtusHW4",
+                                          "Alex Ryndin <me@alexryndin.me>");
 
     gobject_class->set_property = gst_otushw4_set_property;
     gobject_class->get_property = gst_otushw4_get_property;
@@ -176,6 +180,10 @@ void gst_otushw4_finalize(GObject *object) {
     GST_DEBUG_OBJECT(otushw4, "finalize");
 
     /* clean up object here */
+    GST_DEBUG("clean up filepath");
+    if (otushw4->filepath != NULL) {
+        free(otushw4->filepath);
+    }
 
     G_OBJECT_CLASS(gst_otushw4_parent_class)->finalize(object);
 }
@@ -217,7 +225,8 @@ static gboolean gst_otushw4_open(GstAudioSrc *src) {
     GST_INFO("Sample rate %lu byteRate %lu, BlockAlign %d bitspersample %d",
              otushw4->WavHeader.sampleRate, otushw4->WavHeader.byteRate,
              otushw4->WavHeader.blockAlign, otushw4->WavHeader.bitsPerSample);
-    if (ret < 44 || memcmp(otushw4->WavHeader.chunkId, CHUNKID_SIG, 4) ||
+    if (ret < HEADER_SIZE ||
+        memcmp(otushw4->WavHeader.chunkId, CHUNKID_SIG, 4) ||
         memcmp(otushw4->WavHeader.format, FORMAT_SIG, 4) ||
         memcmp(otushw4->WavHeader.subchunk1Id, SUBCHUNK1ID_SIG, 4) ||
         otushw4->WavHeader.subchunk1Size != 16 ||
@@ -270,8 +279,23 @@ static guint gst_otushw4_read(GstAudioSrc *src, gpointer data, guint length,
                               GstClockTime *timestamp) {
     GstOtushw4 *otushw4 = GST_OTUSHW4(src);
 
-    int ret = read(otushw4->input, data, length);
-    usleep(10000);
+    int ret = 0;
+    int delta = 0;
+    GST_DEBUG("I was asked to push %d bytes of data, so i pushed %d, timestamp "
+              "is %lu!",
+              length, ret, *timestamp);
+    while (ret < length) {
+        delta += read(otushw4->input, data, length - ret);
+        if (delta == 0) {
+            break;
+        }
+        ret += delta;
+    }
+    // microsec
+    int to_sleep = (length * 1000000) / SEC_SIZE;
+    usleep(to_sleep);
+    // nanosec
+    // *timestamp += (to_sleep * 1000);
     GST_DEBUG("I was asked to push %d bytes of data, so i pushed %d, timestamp "
               "is %lu!",
               length, ret, *timestamp);
@@ -287,7 +311,7 @@ static guint gst_otushw4_delay(GstAudioSrc *src) {
 
     GST_DEBUG_OBJECT(otushw4, "delay");
 
-    return 500;
+    return 0;
 }
 
 /* reset the audio device, unblock from a write */

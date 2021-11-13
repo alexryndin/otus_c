@@ -203,19 +203,21 @@ static gboolean gst_otushw4_open(GstAudioSrc *src) {
 
     int ret = 0;
 
-    ret += read(otushw4->input, &otushw4->WavHeader.chunkId, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.chunkSize, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.format, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.subchunk1Id, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.subchunk1Size, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.audioFormat, 2);
-    ret += read(otushw4->input, &otushw4->WavHeader.numChannels, 2);
-    ret += read(otushw4->input, &otushw4->WavHeader.sampleRate, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.byteRate, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.blockAlign, 2);
-    ret += read(otushw4->input, &otushw4->WavHeader.bitsPerSample, 2);
-    ret += read(otushw4->input, &otushw4->WavHeader.subchunk2Id, 4);
-    ret += read(otushw4->input, &otushw4->WavHeader.subchunk2Size, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.chunkId, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.chunkSize, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.format, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.subchunk1Id, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.subchunk1Size, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.audioFormat, 2);
+   // ret += read(otushw4->input, &otushw4->WavHeader.numChannels, 2);
+   // ret += read(otushw4->input, &otushw4->WavHeader.sampleRate, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.byteRate, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.blockAlign, 2);
+   // ret += read(otushw4->input, &otushw4->WavHeader.bitsPerSample, 2);
+   // ret += read(otushw4->input, &otushw4->WavHeader.subchunk2Id, 4);
+   // ret += read(otushw4->input, &otushw4->WavHeader.subchunk2Size, 4);
+   //
+    ret += read(otushw4->input, &otushw4->WavHeader, HEADER_SIZE);
 
     GST_INFO("audio format %d", otushw4->WavHeader.audioFormat);
     GST_INFO("CHUNK ID %.*s", 4, otushw4->WavHeader.chunkId);

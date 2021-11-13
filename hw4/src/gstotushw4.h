@@ -38,10 +38,12 @@ G_BEGIN_DECLS
 typedef struct _GstOtushw4 GstOtushw4;
 typedef struct _GstOtushw4Class GstOtushw4Class;
 
+#pragma pack(1)
 struct _GstOtushw4 {
     GstAudioSrc base_otushw4;
     gchar *filepath;
     int input;
+#pragma pack(1)
     struct WavHeader {
         // WAV-формат начинается с RIFF-заголовка:
 

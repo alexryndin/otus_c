@@ -4,3 +4,9 @@
 [submodule "hw4/gst-template"]
 	path = hw4/gst-template
 	url = https://gitlab.freedesktop.org/gstreamer/gst-template.git
+[submodule "contrib/bstrlib"]
+	path = contrib/bstrlib
+	url = git@github.com:websnarf/bstrlib.git
+[submodule "contrib/json-parser"]
+	path = contrib/json-parser
+	url = git@github.com:json-parser/json-parser.git

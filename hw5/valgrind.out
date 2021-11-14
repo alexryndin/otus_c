@@ -1,0 +1,143 @@
+==85105== Memcheck, a memory error detector
+==85105== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==85105== Using Valgrind-3.17.0 and LibVEX; rerun with -h for copyright info
+==85105== Command: ./bin/weather new\ yo
+==85105== 
+I hope you was looking for the City of New York, woeid 2459115
+Weather: Showers
+Wind compass: WSW
+Min temp: 3.810000
+Max temp: 9.550000
+Temp: 7.635000
+Wind speed: 6.379943
+Wind direction: 240.987967
+Air pressure: 1014.000000
+Humidity: 60
+Visibility: 16.654923
+Predictability: 73
+==85105== 
+==85105== HEAP SUMMARY:
+==85105==     in use at exit: 8,301 bytes in 21 blocks
+==85105==   total heap usage: 32,598 allocs, 32,577 frees, 3,133,706 bytes allocated
+==85105== 
+==85105== 41 bytes in 2 blocks are still reachable in loss record 1 of 8
+==85105==    at 0x483E7C5: malloc (vg_replace_malloc.c:380)
+==85105==    by 0x402003F: strdup (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4017F0A: _dl_load_cache_lookup (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4009C47: _dl_map_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x400E284: openaux (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x400E5F1: _dl_map_object_deps (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013ED3: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 41 bytes in 2 blocks are still reachable in loss record 2 of 8
+==85105==    at 0x483E7C5: malloc (vg_replace_malloc.c:380)
+==85105==    by 0x400C528: _dl_new_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x40080B9: _dl_map_object_from_fd (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4009798: _dl_map_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x400E284: openaux (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x400E5F1: _dl_map_object_deps (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013ED3: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 64 bytes in 1 blocks are still reachable in loss record 3 of 8
+==85105==    at 0x483E7C5: malloc (vg_replace_malloc.c:380)
+==85105==    by 0x4014826: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96DB2: _dl_catch_error (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96206: dlerror_run (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96299: __libc_dlopen_mode (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B7F9B4: module_load (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B7FF14: __nss_module_get_function (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B45882: gaih_inet.constprop.0 (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 93 bytes in 3 blocks are still reachable in loss record 4 of 8
+==85105==    at 0x483E7C5: malloc (vg_replace_malloc.c:380)
+==85105==    by 0x402003F: strdup (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4017F0A: _dl_load_cache_lookup (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4009C47: _dl_map_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013E6B: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96DB2: _dl_catch_error (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96206: dlerror_run (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96299: __libc_dlopen_mode (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 93 bytes in 3 blocks are still reachable in loss record 5 of 8
+==85105==    at 0x483E7C5: malloc (vg_replace_malloc.c:380)
+==85105==    by 0x400C528: _dl_new_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x40080B9: _dl_map_object_from_fd (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4009798: _dl_map_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013E6B: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96DB2: _dl_catch_error (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96206: dlerror_run (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96299: __libc_dlopen_mode (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 1,920 bytes in 5 blocks are still reachable in loss record 6 of 8
+==85105==    at 0x48435FF: calloc (vg_replace_malloc.c:1117)
+==85105==    by 0x40116DC: _dl_check_map_versions (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013F1D: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96DB2: _dl_catch_error (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96206: dlerror_run (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96299: __libc_dlopen_mode (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B7F9B4: module_load (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B7FF14: __nss_module_get_function (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 2,407 bytes in 2 blocks are still reachable in loss record 7 of 8
+==85105==    at 0x48435FF: calloc (vg_replace_malloc.c:1117)
+==85105==    by 0x400C254: _dl_new_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x40080B9: _dl_map_object_from_fd (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4009798: _dl_map_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x400E284: openaux (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x400E5F1: _dl_map_object_deps (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013ED3: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== 3,642 bytes in 3 blocks are still reachable in loss record 8 of 8
+==85105==    at 0x48435FF: calloc (vg_replace_malloc.c:1117)
+==85105==    by 0x400C254: _dl_new_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x40080B9: _dl_map_object_from_fd (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4009798: _dl_map_object (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4013E6B: dl_open_worker (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x40139BA: _dl_open (in /usr/lib/ld-2.33.so)
+==85105==    by 0x4B96100: do_dlopen (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96CE7: _dl_catch_exception (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96DB2: _dl_catch_error (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96206: dlerror_run (in /usr/lib/libc-2.33.so)
+==85105==    by 0x4B96299: __libc_dlopen_mode (in /usr/lib/libc-2.33.so)
+==85105== 
+==85105== LEAK SUMMARY:
+==85105==    definitely lost: 0 bytes in 0 blocks
+==85105==    indirectly lost: 0 bytes in 0 blocks
+==85105==      possibly lost: 0 bytes in 0 blocks
+==85105==    still reachable: 8,301 bytes in 21 blocks
+==85105==         suppressed: 0 bytes in 0 blocks
+==85105== 
+==85105== For lists of detected and suppressed errors, rerun with: -s
+==85105== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

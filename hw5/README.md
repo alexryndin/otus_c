@@ -15,19 +15,19 @@ query -- название города или часть названия
 ```
 ## Пример
 ```
-./bin/weather 'new yo'
+./weather 'w yo'
 I hope you was looking for the City of New York, woeid 2459115
-Weather: Showers
-Wind compass: WSW
-Min temp: 3.810000
-Max temp: 9.550000
-Temp: 7.635000
-Wind speed: 6.379943
-Wind direction: 240.987967
-Air pressure: 1014.000000
-Humidity: 60
-Visibility: 16.654923
-Predictability: 73
+Weather:        Showers
+Wind compass:   WSW
+Min temp:       4.75°C
+Max temp:       9.55°C
+Temp:   7.38°C
+Wind speed:     7.449977 km/h
+Wind direction: 241°
+Air pressure:   760 mmhq
+Humidity:       63%
+Visibility:     20 km
+Predictability: 73%
 ```
 
 ## Непонятки

@@ -1,6 +1,7 @@
+#include "dbg.h"
+#include <assert.h>
 #include <bstrlib/bstrlib.h>
 #include <curl/curl.h>
-#include "dbg.h"
 #include <json-parser/json.h>
 #include <stdio.h>
 
@@ -13,10 +14,72 @@
 //  curl_easy_cleanup(curl);
 //}
 
+char *json_type_to_cstr(json_type json_type) {
+    switch (json_type) {
+    case json_none:
+        return "json_none";
+    case json_object:
+        return "json_object";
+    case json_array:
+        return "json_array";
+    case json_integer:
+        return "json_integer";
+    case json_double:
+        return "json_double";
+    case json_string:
+        return "json_string";
+    case json_boolean:
+        return "json_boolean";
+    case json_null:
+        return "json_null";
+    default:
+        SENTINEL("Unknown json type");
+    }
+error:
+    return NULL;
+}
+
+int json_check_print(json_object_entry cur, char *field_name,
+                     json_type expected_type, char *msg, double mod) {
+    if (!strcmp(cur.name, field_name)) {
+        CHECK(cur.value->type == expected_type,
+              "api error: wrong data type: expected %s",
+              json_type_to_cstr(expected_type));
+        switch (expected_type) {
+        case json_none:
+            printf(msg, "<none>");
+            return 1;
+        case json_object:
+            printf(msg, "<object>");
+            return 1;
+        case json_array:
+            printf(msg, "<array>");
+            return 1;
+        case json_integer:
+            printf(msg, cur.value->u.integer * mod);
+            return 1;
+        case json_double:
+            printf(msg, cur.value->u.dbl * mod);
+            return 1;
+        case json_string:
+            printf(msg, cur.value->u.string.ptr);
+            return 1;
+        case json_boolean:
+            printf(msg, cur.value->u.boolean);
+            return 1;
+        case json_null:
+            printf(msg, "<null>");
+            return 1;
+        }
+    }
+error:
+    return 0;
+}
+
 const char *const USAGE = "Usage: %s location\n";
 
-static struct tagbstring _space = bsStatic (" ");
-static struct tagbstring _plus = bsStatic ("+");
+static struct tagbstring _space = bsStatic(" ");
+static struct tagbstring _plus = bsStatic("+");
 
 size_t get_bstr_cb(char *ptr, size_t size, size_t nmemb, bstring str) {
     CHECK(bcatblk(str, ptr, size * nmemb) == BSTR_OK, "Buffer copy failed");
@@ -152,45 +215,23 @@ int main(int argc, char *argv[]) {
     fr = consolidated_weather->u.array.values[0];
     for (unsigned int i = 0; i < fr->u.object.length; i++) {
         cur = fr->u.object.values[i];
-        if (!strcmp(cur.name, "weather_state_name")) {
-            CHECKRC(cur.value->type == json_string, 1, "api error: wrong data type: expected stirng");
-            printf("Weather:\t%s\n", cur.value->u.string.ptr);
-        } else if (!strcmp(cur.name, "wind_direction_compass")) {
-            CHECKRC(cur.value->type == json_string, 1, "api error: wrong data type: expected stirng");
-            printf("Wind compass:\t%s\n", cur.value->u.string.ptr);
-        } else if (!strcmp(cur.name, "min_temp")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Min temp:\t%0.2f°C\n", cur.value->u.dbl);
-        } else if (!strcmp(cur.name, "max_temp")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Max temp:\t%0.2f°C\n", cur.value->u.dbl);
-        } else if (!strcmp(cur.name, "the_temp")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Temp:\t%0.2f°C\n", cur.value->u.dbl);
-        } else if (!strcmp(cur.name, "wind_speed")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Wind speed:\t%f km/h\n", cur.value->u.dbl*1.1609344);
-        } else if (!strcmp(cur.name, "wind_direction")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Wind direction:\t%0.f°\n", cur.value->u.dbl);
-        } else if (!strcmp(cur.name, "air_pressure")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Air pressure:\t%0.f mmhq\n", cur.value->u.dbl*0.750062);
-        } else if (!strcmp(cur.name, "visibility")) {
-            CHECKRC(cur.value->type == json_double, 1, "api error: wrong data type: expected double");
-            printf("Visibility:\t%0.f km\n", cur.value->u.dbl*1.1609344);
-        } else if (!strcmp(cur.name, "predictability")) {
-            CHECKRC(cur.value->type == json_integer, 1, "api error: wrong data type: expected integer");
-            printf("Predictability:\t%ld%%\n", cur.value->u.integer);
-        } else if (!strcmp(cur.name, "humidity")) {
-            CHECKRC(cur.value->type == json_integer, 1, "api error: wrong data type: expected integer");
-            printf("Humidity:\t%ld%%\n", cur.value->u.integer);
-        } else {
+        if (json_check_print(cur, "weather_state_name", json_string, "Weather:\t%s\n", 1)); else
+        if (json_check_print(cur, "wind_direction_compass", json_string,"Wind compass:\t%s\n",1)); else
+        if (json_check_print(cur, "max_temp", json_double, "Max temp:\t%0.2f°C\n", 1)); else
+        if (json_check_print(cur, "min_temp", json_double,"Min temp:\t%0.2f°C\n",1)); else
+        if (json_check_print(cur, "the_temp",  json_double, "Temp:\t%0.2f°C\n", 1)); else
+        if (json_check_print(cur, "wind_speed", json_double,"Windspeed:\t%0.2f°C\n",1)); else
+        if (json_check_print(cur, "wind_direction", json_double,"Wind direction:\t%0.2f°C\n",1)); else
+        if (json_check_print(cur, "air_pressure", json_double,"Airpressure:\t%0.fmmhq\n",0.750062)); else
+        if (json_check_print(cur, "visibility", json_double,"Visibility:\t%0.fkm\n",1.1609344)); else
+        if (json_check_print(cur, "predictability", json_integer,"Predictability:\t%ld%%\n",1)); else
+        if (json_check_print(cur, "humidity", json_integer,"Humidity:\t%ld%%\n",1)); else {
             LOG_DEBUG("Skipping %s", cur.name);
         }
+        // clang-format on
     }
 
-    // fallthrough
+// fallthrough
 exit:
 error:
     if (output != NULL)

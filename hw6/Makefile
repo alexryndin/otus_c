@@ -1,4 +1,4 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc -lcurl -lm -I../contrib -DNDEBUG $(OPTFLAGS) -pedantic
+CFLAGS=-g -O2 -Wall -Wextra -Isrc -lcurl -lm -I../contrib -DNDEBUG -lpthread $(OPTFLAGS) -pedantic
 LIBS=-ldl $(OPTLIBS)
 PREFIX?=/usr/local
 CPATH=src external bin tests

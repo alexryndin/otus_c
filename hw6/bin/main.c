@@ -2,8 +2,11 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <dbg.h>
 
-#define ITER_NUM 10000
+#define ITER_NUM 100000
+
+const char *USAGE = "%s sink [sink...]\n";
 
 static void *fuzzer(char *th) {
     size_t size = 256;
@@ -29,22 +32,38 @@ static void *fuzzer(char *th) {
             LOGGER_FATAL(buf, th);
         }
     }
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
+    int rc = 0;
     pthread_t thread1, thread2;
     logger_init();
-    logger_enable_stdout();
-    logger_enable_file("log.log");
-    LOGGER_INFO("start");
-
-    pthread_create(&thread1, NULL, fuzzer, "FIRST");
-    pthread_create(&thread2, NULL, fuzzer, "SECOND");
+    if (argc < 2) {
+        printf(USAGE, argv[0]);
+        rc = 1;
+        goto exit;
+    }
+    if (argc-1 > LOGGER_MAX_SINKS) {
+        printf("Too many sinks, max = %d\n", LOGGER_MAX_SINKS);
+        rc = 1;
+        goto exit;
+    }
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "stderr")) {
+            logger_enable_stdout();
+        } else {
+            logger_enable_file(argv[i]);
+        }
+    }
+    LOGGER_INFO("started");
+    pthread_create(&thread1, NULL, (void * (*)(void *))fuzzer, "FIRST");
+    pthread_create(&thread2, NULL, (void * (*)(void *))fuzzer, "SECOND");
     pthread_join(thread1, NULL);
     pthread_join(thread2, NULL);
-    LOGGER_INFO("end");
+    LOGGER_INFO("ended");
     logger_deinit();
-    return 0;
-error:
-    return 1;
+
+exit:
+    return rc;
 }

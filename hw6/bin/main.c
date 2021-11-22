@@ -11,21 +11,27 @@ const char *USAGE = "%s sink [sink...]\n";
 static void *fuzzer(char *th) {
     size_t size = 256;
     char buf[256];
+    int rnd;
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJK...";
     for (int i = 0; i < ITER_NUM; i++) {
         size = 256;
         if (size) {
             --size;
+            rnd = rand();
             for (size_t n = 0; n < size; n++) {
-                int key = rand() % (int)(sizeof charset - 1);
+                int key = rnd % (int)(sizeof charset - 1);
                 buf[n] = charset[key];
+                rnd++;
+                if (rnd < 0) {
+                    rnd = rand();
+                }
             }
             buf[size] = '\0';
         }
         buf[0] = '%';
         buf[1] = 's';
         int level =
-            rand() % (LOGGER_L_FATAL + 1 - LOGGER_L_TRACE) + LOGGER_L_TRACE;
+            rnd % (LOGGER_L_FATAL + 1 - LOGGER_L_TRACE) + LOGGER_L_TRACE;
         if (level < LOGGER_L_FATAL) {
             logger_log(level, __FILE__, __LINE__, __func__, buf, th);
         } else {

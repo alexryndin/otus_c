@@ -712,6 +712,8 @@ clib_package_new_from_slug_with_package_name(const char *slug, int verbose,
     }
   } else {
     pkg->author = strdup(author);
+    free(author);
+    author = NULL;
   }
 
   if (!(repo = clib_package_repo(pkg->author, pkg->name))) {

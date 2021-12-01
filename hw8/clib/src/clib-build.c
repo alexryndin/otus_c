@@ -167,6 +167,9 @@ int build_package_with_manifest_name(const char *dir, const char *file) {
       root_package = clib_package_new(json, opts.verbose);
     }
 
+    free(json);
+    json = NULL;
+
     if (root_package && root_package->prefix) {
       char prefix[path_max];
       memset(prefix, 0, path_max);
@@ -201,6 +204,8 @@ int build_package_with_manifest_name(const char *dir, const char *file) {
 #else
     package = clib_package_new(json, 0);
 #endif
+    free(json);
+    json = NULL;
   } else {
 #ifdef DEBUG
     package = clib_package_new_from_slug(dir, 1);

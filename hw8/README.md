@@ -231,4 +231,6 @@ index 60af6e5..19bcc1d 100644
 заботой об обфускации и заметании следов.
 
 ## Ссылки на патчи:
-
+* https://github.com/alexryndin/otus_c/commit/ce90c20c1220e0c9e2892e587ba35a077ad1d4a0.patch
+* https://github.com/alexryndin/otus_c/commit/f0946bc67bddebe6747ca9bdd42821ab4ca4a046.patch
+* https://github.com/alexryndin/otus_c/commit/ffa13c6c3e59bbcace77b72477c134462f443794.patch

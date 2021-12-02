@@ -163,17 +163,14 @@ index 60af6e5..19bcc1d 100644
 ```
 Сообщение, которое подсказало где искать ошибку:
 ```
-9 bytes in 1 blocks are definitely lost in loss record 11 of 258
+1,410 (960 direct, 450 indirect) bytes in 30 blocks are definitely lost in loss record 177 of 258
    at 0x483E7C5: malloc (vg_replace_malloc.c:380)
-   by 0x142807: substr (substr.c:30)
-   by 0x13CB7A: parse_repo_owner (parse-repo.c:32)
-   by 0x11D54C: clib_package_new_from_slug_with_package_name (clib-package.c:614)
+   by 0x13BE79: http_get_shared (http-get.c:46)
+   by 0x11D7DD: clib_package_new_from_slug_with_package_name (clib-package.c:660)
    by 0x11DE9D: clib_package_new_from_slug (clib-package.c:796)
    by 0x121779: build_package_with_manifest_name (clib-build.c:339)
    by 0x121DCF: build_package (clib-build.c:485)
-   by 0x120B57: build_package_with_manifest_name_thread (clib-build.c:127)
-   by 0x4924258: start_thread (in /usr/lib/libpthread-2.33.so)
-   by 0x4A3A5E2: clone (in /usr/lib/libc-2.33.so)
+   by 0x1229E8: main (clib-build.c:698)
 ```
 #### Запуск после патчинга:
 ```

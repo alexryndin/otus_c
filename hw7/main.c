@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <assert.h>
+static_assert(sizeof(void*) == 8, "Pointers are assumed to be exactly 8 bytes");
+
 uint64_t data[] = {4, 8, 15, 16, 23, 32};
 const int data_length = sizeof(data) / sizeof(uint64_t);
 
@@ -17,15 +20,14 @@ void *add_element(uint64_t n, void *p) {
     return mem;
 }
 
-uint64_t f(void *ptr, uint64_t acc, uint64_t (*fun)(long n)) {
+void *f(void *ptr, void *acc, uint64_t (*fun)(uint64_t n)) {
     uint64_t ret = 0;
-    uint64_t r12 = acc;
     if (!ptr)
         goto outf;
 
     ret = fun(*(uint64_t *)ptr);
     if (ret != 0)
-        acc = add_element(*(uint64_t *)ptr, acc);
+        acc = add_element(*(uint64_t *)ptr, (void *)acc);
 
     acc = f(*(void **)(ptr+8), acc, fun);
 
@@ -35,18 +37,16 @@ outf:
 
 void m(uint64_t a, void (*fun)(long n)) {
     uint64_t rbx;
-    void *rbp;
 
     if (!a)
         goto outm;
 
     rbx = a;
-    rbp = f;
 
     a = *(uint64_t *)a;
     fun(a);
 
-    m(*(void **)(rbx + 8), fun);
+    m(*(uint64_t *)(rbx + 8), fun);
 
 outm:
     return;
@@ -60,17 +60,16 @@ void print_int(long n) {
 }
 
 int main() {
-    uint64_t rax = 0;
-    int rbx = data_length;
+    void *list = 0;
     void *ret;
 
     for (int i = data_length; i > 0; i--) {
-        rax = (uint64_t)add_element(data[i - 1], (void *)rax);
+        list = add_element(data[i - 1], (void *)list);
     }
-    m(rax, print_int);
+    m((uint64_t)list, print_int);
     puts(empty_str);
-    ret = f(rax, 0, p);
-    m(ret, print_int);
+    ret = f(list, 0, p);
+    m((uint64_t)ret, print_int);
     puts(empty_str);
     return 0;
 }

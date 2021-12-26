@@ -1,5 +1,5 @@
     bits 64
-    extern malloc, puts, printf, fflush, abort
+    extern malloc, puts, printf, fflush, abort, free
     global main
 
     section   .data
@@ -48,6 +48,27 @@ add_element:
     pop rbx
     pop rbp
 
+    ret
+
+;;; free_list proc
+free_list:
+    test rdi, rdi
+    jz out_free_list
+
+    push rbp
+    push rbx
+
+    mov rbx, [rdi + 8]
+
+    call free
+
+    mov rdi, rbx
+    call free_list
+
+    pop rbx
+    pop rbp
+
+out_free_list:
     ret
 
 ;;; m proc
@@ -118,6 +139,7 @@ outf:
 ;;; main proc
 main:
     push rbx
+    push r12
 
     xor rax, rax
     mov rbx, data_length
@@ -141,6 +163,7 @@ adding_loop:
     xor rsi, rsi
     mov rdi, rbx
     call f
+    mov r12, rax
 
     mov rdi, rax
     mov rsi, print_int
@@ -149,7 +172,13 @@ adding_loop:
     mov rdi, empty_str
     call puts
 
-    pop rbx
+    mov rdi, rbx
+    call free_list
+    mov rdi, r12
+    call free_list
+
+    pop r12
+	pop rbx
 
     xor rax, rax
     ret

@@ -98,10 +98,7 @@ outm:
 
 ;;; f proc
 f:
-	mov rax, rsi
 
-	test rdi, rdi
-	jz outf
 
 	push rbx
 	push r12
@@ -111,30 +108,32 @@ f:
 	mov r12, rsi
 	mov r13, rdx
 
-	mov rdi, [rdi]
-	call rdx
+f_loop:
+	test rbx, rbx
+	jz outf
+
+	mov rdi, [rbx]
+	call r13
 	test rax, rax
-	jz z
+	jz ff
 
 	mov rdi, [rbx]
 	mov rsi, r12
 	call add_element
-	mov rsi, rax
+	mov r12, rax
 	jmp ff
 
-z:
-	mov rsi, r12
-
 ff:
-	mov rdi, [rbx + 8]
-	mov rdx, r13
-	call f
+	mov rbx, [rbx + 8]
+	jmp f_loop
+
+outf:
+	mov rax, r12
 
 	pop r13
 	pop r12
 	pop rbx
 
-outf:
 	ret
 
 ;;; main proc

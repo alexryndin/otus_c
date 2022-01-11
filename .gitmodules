@@ -10,3 +10,6 @@
 [submodule "contrib/json-parser"]
 	path = contrib/json-parser
 	url = git@github.com:json-parser/json-parser.git
+[submodule "contrib/bstring"]
+	path = contrib/bstring
+	url = https://github.com/msteinert/bstring

@@ -58,14 +58,13 @@ char *format_readable_prefix(off_t size) {
     return "UNKN";
 }
 
-int do_daemonize(const char *cmd) {
-    struct rlimit rl;
+int do_daemonize() {
     pid_t pid;
 
-    if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-        LOG_ERR("Cannot get number max file desctiptor number");
-        goto error;
-    }
+   // if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+   //     LOG_ERR("Cannot get number max file desctiptor number");
+   //     goto error;
+   // }
 
     CHECK((pid = fork()) >= 0, "Could't prefork");
     if (pid != 0) {
@@ -76,6 +75,7 @@ int do_daemonize(const char *cmd) {
 
     CHECK((pid = fork()) >= 0, "Could't fork");
     if (pid != 0) {
+        printf("%d\n", pid);
         exit(0);
     }
 
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
     CHECK(sigaction(SIGHUP, &sa, NULL) >= 0, "Could't set signal handler");
 
     if (daemonize) {
-        CHECK(do_daemonize("test") == 0, "Couldn't create a daemon.");
+        CHECK(do_daemonize() == 0, "Couldn't create a daemon.");
     }
 
     /* (from man 7 inotify):
@@ -304,7 +304,9 @@ int main(int argc, char *argv[]) {
                 clients_num++;
             } else {
                 data_socket = accept(sock, NULL, NULL);
-                write(data_socket, MSG_BUSY, strlen(MSG_BUSY));
+                if (write(data_socket, MSG_BUSY, strlen(MSG_BUSY)) < 1) {
+                    LOG_ERR("Couldn't send data to client");
+                };
                 close(data_socket);
             }
             continue;

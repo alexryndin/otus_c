@@ -1,0 +1,9 @@
+[Unit]
+Description=OTUS HW9
+
+[Service]
+Type=forking
+ExecStartPre=install -d /run/otus_hw9
+ExecStart=/bin/bash -c '/path/hw9/main /path/hw9/example.conf -d > /run/otus_hw9/otus_hw9.pid'
+PIDFile=/run/otus_hw9/otus_hw9.pid
+

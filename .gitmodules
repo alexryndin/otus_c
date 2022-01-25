@@ -13,3 +13,6 @@
 [submodule "contrib/bstring"]
 	path = contrib/bstring
 	url = https://github.com/msteinert/bstring
+[submodule "contrib/chan"]
+	path = contrib/chan
+	url = git@github.com:tylertreat/chan.git

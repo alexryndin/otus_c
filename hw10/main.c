@@ -99,7 +99,7 @@ int mmap_crc32(size_t size, char *filepath, uint32_t *crc32) {
             (*crc32 >> 8) ^ CRCTable[lookupIndex]; // CRCTable is an array of
                                                    // 256 32-bit constants
         if (i >= to_discard) {
-            CHECK(munmap(ptr, to_discard) == 0, "Couldn't unmap memory block");
+            // CHECK(munmap(ptr, to_discard) == 0, "Couldn't unmap memory block");
             to_discard += watermark;
         }
     }
@@ -107,7 +107,7 @@ int mmap_crc32(size_t size, char *filepath, uint32_t *crc32) {
     // Finalize the CRC-32 value by inverting all the bits
     *crc32 ^= 0xFFFFFFFFu;
 
-    CHECK(munmap(ptr, 4096) == 0, "Couldn't unmap");
+     // CHECK(munmap(ptr, 4096) == 0, "Couldn't unmap");
 
     printf("%x\n", *crc32);
 exit:

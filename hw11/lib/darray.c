@@ -135,11 +135,16 @@ error:
 }
 
 void DArray_clear_destroy(DArray *array) {
-    CHECK(array != NULL, "Invalid array.");
+    CHECK(array != NULL, "Null array.");
 
     for (size_t i = 0; i < array->end; i++) {
-        free(((void **)(array->contents))[i]);
-        ((void **)(array->contents))[i] = NULL;
+
+        if (array->contents == NULL) {
+            continue;
+        }
+
+        free((array->contents)[i]);
+        (array->contents)[i] = NULL;
     }
     free(array->contents);
     free(array);

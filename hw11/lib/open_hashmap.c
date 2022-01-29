@@ -1,8 +1,8 @@
 #include "open_hashmap.h"
-#include <bstring/bstring/bstrlib.h>
-#include "dbg.h"
 #include "darray.h"
+#include "dbg.h"
 #include "hashmap_utils.h"
+#include <bstring/bstring/bstrlib.h>
 
 OpenHashmap *_OpenHashmap_create(OpenHashmap_compare compare,
                                  OpenHashmap_hash hash,
@@ -15,8 +15,7 @@ OpenHashmap *_OpenHashmap_create(OpenHashmap_compare compare,
     ret->number_of_buckets = number_of_buckets;
     ret->realloc_factor = DEFAULT_REALLOC_FACTOR;
     ret->expand_factor = DEFAULT_EXPAND_FACTOR;
-    ret->buckets =
-        DArray_create(ret->number_of_buckets);
+    ret->buckets = DArray_create(ret->number_of_buckets);
     CHECK(ret->buckets != NULL, "Couldn't initialize buckets.");
     // hack to set end to max
     DArray_set(ret->buckets, ret->number_of_buckets - 1, NULL);
@@ -46,9 +45,12 @@ OpenHashmap *OpenHashmap_create(OpenHashmap_compare compare,
 int OpenHashmap_destroy_with_kv(OpenHashmap *map) {
     int rc = 0;
     OpenHashmapNode *node = NULL;
+    CHECK(map != NULL, "Null map.");
     for (size_t i = 0; i < map->number_of_buckets; i++) {
         node = DArray_get(map->buckets, i);
-        CHECK(node != NULL, "Couldn't find bucket.");
+        if (node == NULL) {
+            continue;
+        };
         if (node->key != NULL) {
             free(node->key);
             node->key = NULL;
@@ -58,17 +60,20 @@ int OpenHashmap_destroy_with_kv(OpenHashmap *map) {
             node->data = NULL;
         }
     }
-    DArray_destroy(map->buckets);
+    DArray_clear_destroy(map->buckets);
     free(map);
 error:
     return rc;
 }
 
 void OpenHashmap_destroy(OpenHashmap *map) {
+    CHECK(map != NULL, "Null map.");
     if (DArray_len(map->buckets) != map->number_of_buckets)
         LOG_ERR("number of buckets != len of buckets array.");
-    DArray_destroy(map->buckets);
+    DArray_clear_destroy(map->buckets);
     free(map);
+error:
+    return;
 }
 
 int OpenHashmap_realloc(OpenHashmap *map) {
@@ -118,7 +123,8 @@ int OpenHashmap_set(OpenHashmap *map, void *key, void *data) {
     size_t n_bucket = hash % map->number_of_buckets;
     size_t i = n_bucket;
     OpenHashmapNode *node = NULL;
-    // LOG_DEBUG("Num of bucket %zu, num of buckets %zu", n_bucket, map->number_of_buckets);
+    // LOG_DEBUG("Num of bucket %zu, num of buckets %zu", n_bucket,
+    // map->number_of_buckets);
     do {
         node = DArray_get(map->buckets, i);
         if (node == NULL) {
@@ -186,8 +192,8 @@ error:
     return ret;
 }
 
-int OpenHashmap_traverse(OpenHashmap *map,
-                         OpenHashmap_traverse_cb traverse_cb, void* userdata) {
+int OpenHashmap_traverse(OpenHashmap *map, OpenHashmap_traverse_cb traverse_cb,
+                         void *userdata) {
     int rc = 0;
     size_t i = 0;
     CHECK(map != NULL, "Null map.");

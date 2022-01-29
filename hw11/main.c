@@ -14,8 +14,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-extern const uint32_t CRCTable[256];
-
 #define USAGE "Usage: %s num_of_workers block_size [glob]\n"
 
 #define SKIP_UNTIL(cursor, line, ch)  \
@@ -42,7 +40,6 @@ extern const uint32_t CRCTable[256];
 static int free_node(OpenHashmapNode *node, void *userdata) {
     // suppress warning;
     (void)userdata;
-
 
     bdestroy(node->key);
     free(node->data);
@@ -77,10 +74,8 @@ struct PathJob {
 
 struct JobControl {
     chan_t *new_jobs;
-    pthread_mutex_t stat_m;
     size_t block_size;
     size_t page_size;
-    int lines;
 };
 
 struct Job {
@@ -114,8 +109,8 @@ int traverse_combine(OpenHashmapNode *node, struct JobResult *userdata) {
         CHECK((key = bstrcpy(node->key)) != NULL,
               "Worker: Could't copy key for the map.");
         tmp = calloc(1, sizeof(uint64_t));
-        (*tmp) += *(uint64_t *)node->data;
         CHECK_MEM(tmp);
+        (*tmp) += *(uint64_t *)node->data;
         CHECK(OpenHashmap_set((OpenHashmap *)userdata, key, tmp) == 0,
               "Worker: Couldn't set value to map");
     } else {
@@ -310,8 +305,8 @@ void *worker(struct JobControl *jc) {
             {
                 errno = 0;
                 char *end;
-                const long _num_of_bytes =
-                    strtol(bdatae(bytes_send_str, "should not happen"), &end, 10);
+                const long _num_of_bytes = strtol(
+                    bdatae(bytes_send_str, "should not happen"), &end, 10);
                 if (bdata(bytes_send_str) == end) {
                     LOG_ERR("Malformed string.");
                     continue;
@@ -394,16 +389,6 @@ int main(int argc, char *argv[]) {
         page_size = 4096;
     }
 
-    //
-    // bstring test,test2,test3;
-    // test = bfromcstr("stroka\ntest\n");
-    // test2 = bmidstr(test, 0, bstrchr(test, '\n'));
-    // test3 = bmidstr(test, bstrchr(test, '\n')+1, blength(test));
-    // printf("%s\n", bdata(test2));
-    // printf("%s\n", bdata(test3));
-    // exit(0);
-
-    //
     if (argc != 3 && argc != 4)
         goto usage;
 
@@ -426,7 +411,6 @@ int main(int argc, char *argv[]) {
     jc.block_size = block_size;
     jc.page_size = page_size;
 
-    // CHECK((fd = open(argv[1], O_RDONLY)) > 0, "Couldn't open file");
     pathlist = get_log_paths(gl);
     CHECK(pathlist != NULL, "Couldn't get list of paths.");
     if (DArray_len(pathlist) <= 0) {
@@ -437,14 +421,7 @@ int main(int argc, char *argv[]) {
 
     CHECK((jc.new_jobs = chan_init(number_of_workers)) != NULL,
           "Couldn't create channel.");
-    CHECK((pthread_mutex_init(&jc.stat_m, NULL)) == 0,
-          "Couldn't create mutex.");
 
-    //  void *ptr = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
-    //  CHECK_MEM(ptr);
-    //  munmap((char *)ptr, page_size);
-
-    //  printf("%x\n", ((char *)ptr)[page_size + 1000000000]);
     for (int i = 0; i < number_of_workers; i++) {
         CHECK(pthread_create(&workers[i], NULL, (void *(*)(void *))worker,
                              &jc) == 0,
@@ -502,6 +479,10 @@ int main(int argc, char *argv[]) {
             CHECK(pthread_join(workers[i], (void **)&jr) == 0,
                   "Couldn't join worker %zu", i);
             CHECK(jr != NULL, "Worker didn't return result.");
+            CHECK(jr->sum_by_url_bytes != NULL,
+                  "Worker didn't return result map.");
+            CHECK(jr->count_by_referer != NULL,
+                  "Worker didn't return result map.");
             jrc.count_by_referer = jr->count_by_referer;
             jrc.sum_by_url_bytes = jr->sum_by_url_bytes;
             jrc.sum_bytes_send = jr->sum_bytes_send;
@@ -517,17 +498,28 @@ int main(int argc, char *argv[]) {
             CHECK(pthread_join(workers[i], (void **)&jr) == 0,
                   "Couldn't join worker %zu", i);
             CHECK(jr != NULL, "Worker didn't return result.");
+            CHECK(jr->sum_by_url_bytes != NULL,
+                  "Worker didn't return result map.");
+            CHECK(jr->count_by_referer != NULL,
+                  "Worker didn't return result map.");
+
             OpenHashmap_traverse(jr->count_by_referer,
                                  (OpenHashmap_traverse_cb)traverse_combine,
                                  (void *)jrc.count_by_referer);
             OpenHashmap_traverse(jr->count_by_referer,
                                  (OpenHashmap_traverse_cb)free_node, NULL);
+
             OpenHashmap_traverse(jr->sum_by_url_bytes,
                                  (OpenHashmap_traverse_cb)traverse_combine,
                                  (void *)jrc.sum_by_url_bytes);
             OpenHashmap_traverse(jr->sum_by_url_bytes,
                                  (OpenHashmap_traverse_cb)free_node, NULL);
+
+            OpenHashmap_destroy(jr->sum_by_url_bytes);
+            OpenHashmap_destroy(jr->count_by_referer);
             jrc.sum_bytes_send += jr->sum_bytes_send;
+            free(jr);
+            jr = NULL;
             LOG_DEBUG("Joined result for worker %zu", i);
         }
         // OpenHashmap_traverse(jrc.count_by_referer, traverse_print_map, NULL);
@@ -585,10 +577,15 @@ exit:
     if (jrc.count_by_referer != NULL) {
         OpenHashmap_traverse(jrc.count_by_referer,
                              (OpenHashmap_traverse_cb)free_node, NULL);
+        OpenHashmap_destroy(jrc.count_by_referer);
     }
     if (jrc.sum_by_url_bytes != NULL) {
         OpenHashmap_traverse(jrc.sum_by_url_bytes,
                              (OpenHashmap_traverse_cb)free_node, NULL);
+        OpenHashmap_destroy(jrc.sum_by_url_bytes);
+    }
+    if (logf != NULL) {
+        fclose(logf);
     }
     return rc;
 usage:

@@ -1,0 +1,4 @@
+-Ilib
+-I../contrib
+-I../contrib/chan/src
+-Itests

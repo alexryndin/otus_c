@@ -25,6 +25,8 @@ int main(int argc, char *argv[]) {
     int rc = 0;
     int err = 0;
     int db_type = 0;
+    DBWHandler *h = NULL;
+    DBWResult *res = NULL;
     if (argc != 5) {
         goto usage;
     }
@@ -56,11 +58,11 @@ int main(int argc, char *argv[]) {
         goto error;
     }
 
-    DBWHandler *h = DBWconnect(db_type, &url, &err);
+    h = dbw_connect(db_type, &url, &err);
     CHECK(h != NULL, "Couldn't connect to database");
     CHECK(err == 0, "Database connetcion error");
 
-    DBWResult *res = get_table_types(h, &table, NULL);
+    res = dbw_get_table_types(h, &table, NULL);
     CHECK_MEM(res);
     char ok = 0;
     for (; rv_len(res->head_vec) > 0;) {
@@ -70,11 +72,14 @@ int main(int argc, char *argv[]) {
         if (!bstrcmp(f, &column)) {
             if (type == DBW_INTEGER) {
                 ok = 1;
+            bdestroy(f);
                 break;
             }
-            bdestroy(f);
         }
+            bdestroy(f);
     }
+    DBWResult_destroy(res);
+    res = NULL;
     CHECK(ok, "Couldn't find column with appropriate type");
 
     char *stdev_func_str = db_type == DBW_SQLITE3 ? "stdev" : "stddev";
@@ -84,8 +89,10 @@ int main(int argc, char *argv[]) {
                         " limit 1",
                         stdev_func_str, bdata(&column), bdata(&table));
 
-    res = query(h, q, NULL);
-    DBWprint(res);
+    res = dbw_query(h, q, NULL);
+    dbw_print(res);
+    bdestroy(q);
+    q = NULL;
 
     rc = 0;
     goto exit;
@@ -93,6 +100,12 @@ int main(int argc, char *argv[]) {
 error:
     rc = 1;
 exit:
+    if (h != NULL) {
+        dbw_close(h);
+    }
+    if (res != NULL) {
+        DBWResult_destroy(res);
+    }
     return rc;
 usage:
     printf(USAGE, argv[0]);

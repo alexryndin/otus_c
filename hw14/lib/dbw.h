@@ -33,14 +33,13 @@ typedef enum DBWDBType {
 } DBWDBType;
 
 typedef struct DBWHandler {
-    union {
-        int DBWDBType;
-        int error;
-    };
+    int DBWDBType;
     void *conn;
 } DBWHandler;
 
-DBWHandler *DBWconnect(int DBWDBType, const bstring url, int *err);
-DBWResult *query(DBWHandler *h, const bstring query, int *err);
-DBWResult *get_table_types(DBWHandler *h, const bstring table, int *err);
-int DBWprint(DBWResult *res);
+DBWHandler *dbw_connect(int DBWDBType, const bstring url, int *err);
+DBWResult *dbw_get_table_types(DBWHandler *h, const bstring table, int *err);
+DBWResult *dbw_query(DBWHandler *h, const bstring query, int *err);
+int dbw_close(DBWHandler *h);
+int dbw_print(DBWResult *res);
+int DBWResult_destroy(DBWResult *res);

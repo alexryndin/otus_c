@@ -22,3 +22,6 @@
 [submodule "contrib/klib"]
 	path = contrib/klib
 	url = git@github.com:alexryndin/klib.git
+[submodule "contrib/sqlite3-extension-functions"]
+	path = contrib/sqlite3-extension-functions
+	url = git@github.com:codingforfun/sqlite3-extension-functions.git

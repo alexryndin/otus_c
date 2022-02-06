@@ -11,7 +11,6 @@ static struct tagbstring __integer = bsStatic("integer");
 
 // forward declarations
 static DBWResult *DBWResult_create(int t);
-static int DBWResult_destroy(DBWResult *res);
 
 // ******************************
 // * SQLite
@@ -57,6 +56,22 @@ error:
         sqlite3_free(err_str);
     }
     return NULL;
+}
+
+static int dbw_sqlite3_close(DBWHandler *h) {
+    int rc = 0;
+    rc = sqlite3_close(h->conn);
+    CHECK(rc == SQLITE_OK, "Coudldn't close sqlite connetion: %s",
+          sqlite3_errstr(rc));
+    // fallthrough
+error:
+    if (h != NULL) {
+        free(h);
+    }
+    if (rc != 0) {
+        return DBW_ERR;
+    }
+    return 0;
 }
 
 static int sqllite3_get_types_cb(DBWResult *res, int n, char **cls,
@@ -114,6 +129,9 @@ static DBWResult *sqlite3_get_table_types(DBWHandler *h, const bstring table,
 
     if (res != NULL) {
         PQclear(res);
+    }
+    if (query != NULL) {
+        bdestroy(query);
     }
     return ret;
 error:
@@ -235,6 +253,11 @@ error:
     return NULL;
 }
 
+static int dbw_pg_close(DBWHandler *h) {
+    PQfinish(h->conn);
+    free(h);
+    return 0;
+}
 static DBWResult *pg_get_table_types(DBWHandler *h, const bstring table,
                                      int *err) {
     int n_fields = 0;
@@ -346,9 +369,10 @@ error:
 // * Generic interface
 // ******************************
 
-int DBWprint(DBWResult *res) {
+int dbw_print(DBWResult *res) {
     CHECK(res != NULL, "Null result.");
-    size_t n_fields = (res->head_vec).n;
+    size_t n_fields = rv_len(res->head_vec);
+    size_t n_tuples = rv_len(res->res_vec);
 
     if (n_fields < 1 || rv_len(res->res_vec) < 1) {
         return 0;
@@ -365,18 +389,30 @@ int DBWprint(DBWResult *res) {
         }
         printf("\n");
     }
+    res->res_vec.n = n_tuples;
+    res->head_vec.n = n_fields;
 error:
     return -1;
 }
 
-static int DBWResult_destroy(DBWResult *res) {
+int DBWResult_destroy(DBWResult *res) {
     CHECK(res != NULL, "Null result");
+    while (rv_len(res->head_vec) > 0) {
+        // thanks to type magic, we are sure that head_vec contains bstrings...
+        bdestroy(rv_pop(res->head_vec, NULL));
+    }
     rv_destroy(res->head_vec);
     if (res->res_type == DBW_TYPES) {
         rv_destroy(res->types_vec);
     } else {
-        rv_destroy(res->head_vec);
+        while (rv_len(res->res_vec) > 0) {
+            // ... as well as res_ves
+            bdestroy(rv_pop(res->res_vec, NULL));
+        }
+        rv_destroy(res->res_vec);
     }
+
+    free(res);
 
     return 0;
 error:
@@ -402,7 +438,7 @@ error:
     return NULL;
 }
 
-DBWHandler *DBWconnect(int DBWDBType, const bstring url, int *err) {
+DBWHandler *dbw_connect(int DBWDBType, const bstring url, int *err) {
     if (DBWDBType == DBW_POSTGRESQL)
         return pg_connect(url, err);
     if (DBWDBType == DBW_SQLITE3)
@@ -414,7 +450,7 @@ error:
     return NULL;
 }
 
-DBWResult *get_table_types(DBWHandler *h, const bstring table, int *err) {
+DBWResult *dbw_get_table_types(DBWHandler *h, const bstring table, int *err) {
     CHECK(h != NULL, "Null handler.");
     if (h->DBWDBType == DBW_POSTGRESQL)
         return pg_get_table_types(h, table, err);
@@ -428,7 +464,7 @@ error:
     return NULL;
 }
 
-DBWResult *query(DBWHandler *h, const bstring query, int *err) {
+DBWResult *dbw_query(DBWHandler *h, const bstring query, int *err) {
     CHECK(h != NULL, "Null handler.");
     if (h->DBWDBType == DBW_POSTGRESQL)
         return pg_query(h, query, err);
@@ -440,4 +476,14 @@ DBWResult *query(DBWHandler *h, const bstring query, int *err) {
 
 error:
     return NULL;
+}
+
+int dbw_close(DBWHandler *h) {
+    CHECK(h != NULL, "Null handler.");
+    if (h->DBWDBType == DBW_POSTGRESQL)
+        return dbw_pg_close(h);
+    if (h->DBWDBType == DBW_SQLITE3)
+        return dbw_sqlite3_close(h);
+error:
+    return DBW_ERR_UNKN_DB;
 }

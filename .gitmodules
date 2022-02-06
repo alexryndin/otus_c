@@ -16,3 +16,9 @@
 [submodule "contrib/chan"]
 	path = contrib/chan
 	url = git@github.com:tylertreat/chan.git
+[submodule "klib"]
+	path = klib
+	url = git@github.com:alexryndin/klib.git
+[submodule "contrib/klib"]
+	path = contrib/klib
+	url = git@github.com:alexryndin/klib.git

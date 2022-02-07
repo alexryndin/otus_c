@@ -1,27 +1,21 @@
 [submodule "hw3/external/bstrlib"]
 	path = hw3/external/bstrlib
-	url = git@github.com:websnarf/bstrlib.git
+	url = https://github.com/websnarf/bstrlib.git
 [submodule "hw4/gst-template"]
 	path = hw4/gst-template
 	url = https://gitlab.freedesktop.org/gstreamer/gst-template.git
 [submodule "contrib/bstrlib"]
 	path = contrib/bstrlib
-	url = git@github.com:websnarf/bstrlib.git
+	url = https://github.com/websnarf/bstrlib.git
 [submodule "contrib/json-parser"]
 	path = contrib/json-parser
-	url = git@github.com:json-parser/json-parser.git
+	url = https://github.com/json-parser/json-parser.git
 [submodule "contrib/bstring"]
 	path = contrib/bstring
 	url = https://github.com/msteinert/bstring
 [submodule "contrib/chan"]
 	path = contrib/chan
-	url = git@github.com:tylertreat/chan.git
-[submodule "klib"]
-	path = klib
-	url = git@github.com:alexryndin/klib.git
-[submodule "contrib/klib"]
-	path = contrib/klib
-	url = git@github.com:alexryndin/klib.git
+	url = https://github.com/tylertreat/chan.git
 [submodule "contrib/sqlite3-extension-functions"]
 	path = contrib/sqlite3-extension-functions
-	url = git@github.com:codingforfun/sqlite3-extension-functions.git
+	url = https://github.com/codingforfun/sqlite3-extension-functions.git

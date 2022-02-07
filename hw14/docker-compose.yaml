@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  pg:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: qwerty
+    volumes:
+      - "./oscar.sql:/docker-entrypoint-initdb.d/oscar.sql"
+  hw14:
+    build: .
+    depends_on:
+      - pg
+

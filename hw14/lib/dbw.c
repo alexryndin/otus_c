@@ -379,13 +379,13 @@ int dbw_print(DBWResult *res) {
     }
     for (size_t j = 0; j < n_fields; j++) {
         bstring f = rv_pop(res->head_vec, NULL);
-        printf("%s ", bdata(f));
+        printf("%-15.15s ", bdata(f));
     }
     printf("\n");
     for (; rv_len(res->res_vec) > 0;) {
         for (size_t j = 0; j < n_fields; j++) {
             bstring f = rv_pop(res->res_vec, NULL);
-            printf("%s ", bdata(f));
+            printf("%-15.15s ", bdata(f));
         }
         printf("\n");
     }

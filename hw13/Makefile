@@ -11,15 +11,11 @@ TESTS=$(patsubst %.c,%,$(TEST_SRC))
 LIB_SRC=$(wildcard lib/*.c)
 LIB=$(patsubst %.c,%.o,$(LIB_SRC))
 
-SHARED_SRC=$(wildcard ../contrib/sqlite3-extension-functions/*.c)
-SHARED=$(patsubst %.c,%.so,$(SHARED_SRC))
-
 EXTERNAL_SRC=$(wildcard ../contrib/**/bstring/bstrlib.c ../contrib/**/src/*.c)
 EXTERNAL_SRC_NO_TESTS=$(filter-out %test.c, $(EXTERNAL_SRC))
 EXTERNAL=$(patsubst %.c,%.o,$(EXTERNAL_SRC_NO_TESTS))
 
-all: $(BIN) $(SHARED) tests
-	cp $(SHARED) .
+all: $(BIN) tests
 
 dev: CFLAGS := $(filter-out -O2,$(CFLAGS))
 dev: CFLAGS := $(filter-out -DNDEBUG,$(CFLAGS))
@@ -29,9 +25,6 @@ dev: all
 $(BIN): $(LIB) $(EXTERNAL)
 
 $(TESTS): $(LIB) $(EXTERNAL)
-
-$(SHARED): $(SHARED_SRC)
-	$(CC) -fPIC $(LDFLAGS) -shared -o $@ $(SHARED_SRC)
 
 $(TARGET): CFLAGS += -fPIC
 $(TARGET): build $(OBJECTS) $(EXTERNAL)
@@ -44,7 +37,6 @@ tests: CFLAGS += $(TARGET)
 tests: CFLAGS := $(filter-out -pedantic,$(CFLAGS))
 tests: CFLAGS := $(filter-out -DNDEBUG,$(CFLAGS))
 tests: $(TESTS)
-	sh ./tests/runtests.sh
 
 
 build:

@@ -489,7 +489,7 @@ static int ws_parse_header(struct ClientHandle *ch) {
     delta = bstrchrp(&tline, ' ', new_cursor);
     CHECK(delta > new_cursor, "Couldn't fetch path from header.");
     CHECK(
-        bassignmidstr(ch->path, &tline, new_cursor, delta - new_cursor),
+        bassignmidstr(ch->path, &tline, new_cursor, delta - new_cursor) == BSTR_OK,
         "Couldn't extract path from header");
 
     new_cursor = delta + 1;

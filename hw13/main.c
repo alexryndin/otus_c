@@ -2,20 +2,21 @@
 #include <dbg.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/epoll.h>
 #include <sys/sendfile.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #define USAGE "Usage: %s port num_of_workers\n"
 
 #define MAX_BACKLOG 200
-#define MAX_EVENTS  20
+#define MAX_EVENTS  200
 #define BUF_SIZE    4096
 
 #define SKIP_UNTIL(cursor, line, ch)  \
@@ -103,15 +104,15 @@ static struct tagbstring _GET = bsStatic("GET");
 
 static struct tagbstring _HTTP_1_1 = bsStatic("HTTP/1.1");
 
-static struct tagbstring _HTTP_200_OK = bsStatic("HTTP/1.1 200 OK\r\n");
+static struct tagbstring _HTTP_200_OK = bsStatic("HTTP/1.0 200 OK\r\n");
 static struct tagbstring _HTTP_404_NOT_FOUND =
-    bsStatic("HTTP/1.1 404 Not Found\r\n");
+    bsStatic("HTTP/1.0 404 Not Found\r\n");
 static struct tagbstring _HTTP_400_BAD_REQ =
-    bsStatic("HTTP/1.1 400 Bad Request\r\n");
+    bsStatic("HTTP/1.0 400 Bad Request\r\n");
 static struct tagbstring _HTTP_500_INTERNALL_ERR =
-    bsStatic("HTTP/1.1 500 Internal Server Error\r\n");
+    bsStatic("HTTP/1.0 500 Internal Server Error\r\n");
 static struct tagbstring _HTTP_403_ACCESS_DENIED =
-    bsStatic("HTTP/1.1 403 Access Denied\r\n");
+    bsStatic("HTTP/1.0 403 Access Denied\r\n");
 
 struct WorkerControl {
     int listen_sock;
@@ -261,6 +262,11 @@ static int ws_send_str(struct ClientHandle *ch, bstring str, int64_t *sent) {
         }
 
         *sent += rc;
+        LOG_DEBUG(
+            "Sent str len %d, total %ld, rem %ld",
+            rc,
+            *sent,
+            blength(str) - *sent);
         if (*sent >= blength(str)) {
             return WS_OK;
         }
@@ -293,7 +299,24 @@ static int ws_send_file(struct ClientHandle *ch) {
             return WS_ERROR;
         }
 
+        LOG_DEBUG(
+            "Sent file len %zd, total %ld, rem %ld",
+            rc,
+            ch->content_sent,
+            ch->content_size - ch->content_sent);
+
         if (ch->content_sent >= ch->content_size) {
+            close(ch->fd);
+            ch->fd = -1;
+            // if (setsockopt(
+            //         ch->sock, SOL_TCP, TCP_NODELAY, &(int){1}, sizeof(int))
+            //         !=
+            //     0) {
+            //     LOG_ERR(
+            //         "Couldn't set TCP_NODELAY on client"
+            //         "socket %d",
+            //         ch->sock);
+            // }
             return WS_OK;
         }
     }
@@ -347,34 +370,33 @@ error:
         ClientHandle_destroy(ch);                                   \
     } while (0)
 
-#define WS_TRY_SEND_CLOSE(ch, epollfd)                                  \
-    {                                                                   \
-        switch (ws_try_send(ch)) {                                      \
-        case WS_EAGAIN:                                                 \
-            ev.data = e_ptr->data;                                      \
-            ev.events = EPOLLIN | EPOLLET | EPOLLOUT;                   \
-            CHECK(                                                      \
-                epoll_ctl(epollfd, EPOLL_CTL_MOD, ch->sock, &ev) == 0,  \
-                "Couldn't modify epoll to add EPOLLOUT for client "     \
-                "sock");                                                \
-            break;                                                      \
-        case WS_OK:                                                     \
-            ev.data = e_ptr->data;                                      \
-            ev.events = EPOLLIN | EPOLLET;                              \
-            CHECK(                                                      \
-                epoll_ctl(epollfd, EPOLL_CTL_MOD, ch->sock, &ev) == 0,  \
-                "Couldn't modify epoll to remove EPOLLOUT for "         \
-                "client "                                               \
-                "sock");                                                \
-            break;                                                      \
-        default:                                                        \
-            LOG_ERR("Error communicating with client");                 \
-            CHECK(                                                      \
-                epoll_ctl(epollfd, EPOLL_CTL_DEL, ch->sock, NULL) == 0, \
-                "Couldn't delete client sock from epoll");              \
-            ClientHandle_destroy(ch);                                   \
-            continue;                                                   \
-        }                                                               \
+#define WS_TRY_SEND_CLOSE(ch, epollfd)                                    \
+    {                                                                     \
+        switch (ws_try_send(ch)) {                                        \
+        case WS_EAGAIN:                                                   \
+            ev.data = e_ptr->data;                                        \
+            ev.events = EPOLLIN | EPOLLET | EPOLLOUT;                     \
+            CHECK(                                                        \
+                epoll_ctl(epollfd, EPOLL_CTL_MOD, ch->sock, &ev) == 0,    \
+                "Couldn't modify epoll to add EPOLLOUT for client "       \
+                "sock");                                                  \
+            break;                                                        \
+        case WS_OK:                                                       \
+            ev.data = e_ptr->data;                                        \
+            ev.events = EPOLLIN | EPOLLET;                                \
+            CHECK(                                                        \
+                epoll_ctl(epollfd, EPOLL_CTL_DEL, ch->sock, NULL) == 0,   \
+                "Couldn't delete client sock from epoll");                \
+            ClientHandle_destroy(ch);                                     \
+            break;                                                        \
+        default:                                                          \
+            LOG_ERR("Error communicating with client sock %d", ch->sock); \
+            CHECK(                                                        \
+                epoll_ctl(epollfd, EPOLL_CTL_DEL, ch->sock, NULL) == 0,   \
+                "Couldn't delete client sock from epoll");                \
+            ClientHandle_destroy(ch);                                     \
+            continue;                                                     \
+        }                                                                 \
     }
 
 static int ws_read(struct ClientHandle *ch, char *buf) {
@@ -489,7 +511,8 @@ static int ws_parse_header(struct ClientHandle *ch) {
     delta = bstrchrp(&tline, ' ', new_cursor);
     CHECK(delta > new_cursor, "Couldn't fetch path from header.");
     CHECK(
-        bassignmidstr(ch->path, &tline, new_cursor, delta - new_cursor) == BSTR_OK,
+        bassignmidstr(ch->path, &tline, new_cursor, delta - new_cursor) ==
+            BSTR_OK,
         "Couldn't extract path from header");
 
     new_cursor = delta + 1;

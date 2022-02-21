@@ -1,4 +1,4 @@
-CFLAGS=-g -O2 -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -pedantic  -DNDEBUG -I/usr/lib -L/usr/lib -I../contrib -Ilib -isystem/usr/include/postgresql -isystem/usr/include/sqlite3 -isystem../contrib/chan/src -pthread $(OPTFLAGS)
+CFLAGS=-g -O3 -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -pedantic  -DNDEBUG -I/usr/lib -L/usr/lib -I../contrib -Ilib -isystem/usr/include/postgresql -isystem/usr/include/sqlite3 -isystem../contrib/chan/src -pthread $(OPTFLAGS)
 LDLIBS=-ldl -lpq -lsqlite3 -pedantic  $(OPTLIBS)
 PREFIX?=/usr/local
 
